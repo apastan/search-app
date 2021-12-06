@@ -4,6 +4,18 @@ import {Box, Button, Pagination, Stack, TextField, Typography} from '@mui/materi
 import axios from 'axios';
 import {Countries, Preloader} from '../../common-components';
 
+const filterCountries = (countries: any[], searchInput: string) => {
+    if (!searchInput) {
+        console.log('searchInput is empty');
+        return countries
+    }
+
+    return countries.filter(({name, translations = [], altSpellings = []}) => {
+        const joinedCountryNames = [name, ...Object.values(translations), ...altSpellings].join().toLowerCase();
+        return joinedCountryNames.includes(searchInput.toLowerCase());
+    });
+};
+
 export const SearchOnClientSideAutocomplete: FC = () => {
     console.log(`Рендер SearchOnClientSideAutocomplete Component`);
     const [countries, setCountries] = useState<any[]>([]);
@@ -13,20 +25,12 @@ export const SearchOnClientSideAutocomplete: FC = () => {
     const COUNTRIES_PER_PAGE = 6;
     const pagesTotalCount = Math.ceil(filteredCountries.length / COUNTRIES_PER_PAGE);
 
-
-    const filterCountries = (countries: any[], searchInput: string) => {
-        return countries.filter(({name, translations = [], altSpellings = []}) => {
-            const joinedCountryNames = [name, ...Object.values(translations), ...altSpellings].join().toLowerCase();
-            return joinedCountryNames.includes(searchInput.toLowerCase());
-        });
-    };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.currentTarget.value);
         setFilteredCountries(filterCountries(countries, e.currentTarget.value));
         setPage(1);
-        console.log(e.currentTarget.value);
-        console.log(filterCountries(countries, e.currentTarget.value));
+        //console.log(e.currentTarget.value);
+        //console.log(filterCountries(countries, e.currentTarget.value));
     };
 
     const clearSearchInput = () => {
