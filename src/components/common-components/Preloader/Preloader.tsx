@@ -9,7 +9,7 @@ const useStyles = makeStyles(() => ({
     },
     divLoader: {
         width: '100vw',
-        height: '95vh',
+        height: '65vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
