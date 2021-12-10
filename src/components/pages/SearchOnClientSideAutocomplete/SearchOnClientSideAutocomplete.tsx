@@ -15,20 +15,6 @@ export const SearchOnClientSideAutocomplete: FC = () => {
     const COUNTRIES_PER_PAGE = 6;
     const pagesTotalCount = Math.ceil(filteredCountries.length / COUNTRIES_PER_PAGE);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchInput(e.currentTarget.value);
-        setFilteredCountries(filterCountries(countries, e.currentTarget.value));
-        setPage(1);
-        //console.log(e.currentTarget.value);
-        //console.log(filterCountries(countries, e.currentTarget.value));
-    };
-
-    const clearSearchInput = () => {
-        setSearchInput('');
-        setFilteredCountries(countries)
-        setPage(1);
-    };
-
     useEffect(() => {
         axios.get('https://restcountries.com/v2/all')
             .then((response) => {
@@ -36,6 +22,18 @@ export const SearchOnClientSideAutocomplete: FC = () => {
                 setFilteredCountries(response.data);
             });
     }, []);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchInput(e.currentTarget.value);
+        setFilteredCountries(filterCountries(countries, e.currentTarget.value));
+        setPage(1);
+    };
+
+    const clearSearchInput = () => {
+        setSearchInput('');
+        setFilteredCountries(countries)
+        setPage(1);
+    };
 
     const countriesToRender = filteredCountries.slice((page - 1) * COUNTRIES_PER_PAGE, page * COUNTRIES_PER_PAGE);
 
@@ -68,18 +66,18 @@ export const SearchOnClientSideAutocomplete: FC = () => {
 
             {
                 filteredCountries.length > 0
-                    ? <Countries countries={countriesToRender}/>
+                    ? (
+                        <>
+                            <Countries countries={countriesToRender}/>
+                            <Box sx={{pt: 8, justifyContent: 'center', display: 'flex'}}>
+                                <Pagination count={pagesTotalCount} page={page} onChange={handlePageChange}/>
+                            </Box>
+                        </>
+                    )
                     : <Typography variant="h6" sx={{textAlign: 'center', pt: 2, pb: 2}}>I can't find countries with such queer name :(</Typography>
             }
 
 
-            {
-                countriesToRender.length > 0 && (
-                    <Box sx={{pt: 8, justifyContent: 'center', display: 'flex'}}>
-                        <Pagination count={pagesTotalCount} page={page} onChange={handlePageChange}/>
-                    </Box>
-                )
-            }
 
         </SearchPageLayout>
     );
