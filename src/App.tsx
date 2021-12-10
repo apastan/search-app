@@ -5,7 +5,7 @@ import {
     HomePage,
     NotFound,
     SearchOnClientOnClickControlledInput,
-    SearchOnClientSideAutocomplete, SearchOnServerSideAutocomplete
+    SearchOnClientSideAutocomplete, SearchOnServerSideAutocomplete, SearchOnServerSideOnClickUncontrolledInput
 } from './components/pages';
 
 
@@ -20,7 +20,7 @@ export function App() {
                     <Route path="search-client-autocomplete" element={<SearchOnClientSideAutocomplete/>}/>
                     <Route path="search-client-onclick" element={<SearchOnClientOnClickControlledInput/>}/>
                     <Route path="search-server-autocomplete" element={<SearchOnServerSideAutocomplete/>}/>
-                    <Route path="search-server-onclick" element={<>SearchOnServerSideOnClickControlledInput</>}/>
+                    <Route path="search-server-onclick" element={<SearchOnServerSideOnClickUncontrolledInput/>}/>
                     <Route path="*" element={<NotFound/>}/>
                 </Route>
             </Routes>
