@@ -3,18 +3,8 @@ import {SearchPageLayout} from '../../layouts/SearchPageLayout';
 import {Box, Button, Pagination, Stack, TextField, Typography} from '@mui/material';
 import axios from 'axios';
 import {Countries, Preloader} from '../../common-components';
+import {filterCountries} from '../../../utils';
 
-const filterCountries = (countries: any[], searchInput: string) => {
-    if (!searchInput) {
-        console.log('searchInput is empty');
-        return countries
-    }
-
-    return countries.filter(({name, translations = [], altSpellings = []}) => {
-        const joinedCountryNames = [name, ...Object.values(translations), ...altSpellings].join().toLowerCase();
-        return joinedCountryNames.includes(searchInput.toLowerCase());
-    });
-};
 
 export const SearchOnClientSideAutocomplete: FC = () => {
     console.log(`Рендер SearchOnClientSideAutocomplete Component`);
