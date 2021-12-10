@@ -76,7 +76,12 @@ export const SearchOnClientSideAutocomplete: FC = () => {
                 </Stack>
             </Box>
 
-            <Countries countries={countriesToRender}/>
+            {
+                filteredCountries.length > 0
+                    ? <Countries countries={countriesToRender}/>
+                    : <Typography variant="h6" sx={{textAlign: 'center', pt: 2, pb: 2}}>I can't find countries with such queer name :(</Typography>
+            }
+
 
             {
                 countriesToRender.length > 0 && (

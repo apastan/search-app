@@ -9,12 +9,6 @@ type TCountries = {
 export const Countries: FC<TCountries> = React.memo(({countries}) => {
     console.log(`Рендер Countries Component`);
 
-    if (countries.length === 0) return (
-
-        <Typography>I can't find countries with such queer name :(</Typography>
-
-    );
-
     return (
         <>
             <Box sx={{ flexGrow: 1 }}>
