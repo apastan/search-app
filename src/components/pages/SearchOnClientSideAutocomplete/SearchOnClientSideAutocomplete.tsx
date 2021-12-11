@@ -1,49 +1,47 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useState} from 'react';
 import {SearchPageLayout} from '../../layouts/SearchPageLayout';
 import {Box, Button, Pagination, Stack, TextField, Typography} from '@mui/material';
-import axios from 'axios';
-import {Countries, Preloader} from '../../common-components';
+import {Countries, CountriesNotFound, Preloader, useCountries} from '../../common-components';
 import {filterCountries} from '../../../utils';
+import {UseMyPagination} from '../../../hooks/UseMyPagination';
 
+
+const COUNTRIES_PER_PAGE: number = 6;
 
 export const SearchOnClientSideAutocomplete: FC = () => {
     console.log(`Рендер SearchOnClientSideAutocomplete Component`);
-    const [countries, setCountries] = useState<any[]>([]);
-    const [searchInput, setSearchInput] = useState<string>('');
-    const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
-    const [page, setPage] = useState(1);
-    const COUNTRIES_PER_PAGE = 6;
-    const pagesTotalCount = Math.ceil(filteredCountries.length / COUNTRIES_PER_PAGE);
 
-    useEffect(() => {
-        axios.get('https://restcountries.com/v2/all')
-            .then((response) => {
-                setCountries(response.data);
-                setFilteredCountries(response.data);
-            });
-    }, []);
+    const {
+        countries,
+        filteredCountries,
+        setFilteredCountries,
+        countriesFetching,
+        showFilteredCountries
+    } = useCountries();
+
+    const {
+        page,
+        setPage,
+        pagesTotalCount,
+        itemsToRender,
+        handlePageChange
+    } = UseMyPagination(filteredCountries, COUNTRIES_PER_PAGE);
+
+    const [searchInput, setSearchInput] = useState<string>('');
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.currentTarget.value);
-        setFilteredCountries(filterCountries(countries, e.currentTarget.value));
         setPage(1);
+        setFilteredCountries(filterCountries(countries, e.currentTarget.value));
     };
 
     const clearSearchInput = () => {
         setSearchInput('');
-        setFilteredCountries(countries)
         setPage(1);
+        setFilteredCountries(countries);
     };
 
-    const countriesToRender = filteredCountries.slice((page - 1) * COUNTRIES_PER_PAGE, page * COUNTRIES_PER_PAGE);
-
-    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-        setPage(value);
-    };
-
-    if (countries.length === 0) {
-        return <Preloader/>;
-    }
+    if (countriesFetching) return <Preloader/>;
 
     return (
         <SearchPageLayout>
@@ -65,19 +63,17 @@ export const SearchOnClientSideAutocomplete: FC = () => {
             </Box>
 
             {
-                filteredCountries.length > 0
+                showFilteredCountries
                     ? (
                         <>
-                            <Countries countries={countriesToRender}/>
+                            <Countries countries={itemsToRender}/>
                             <Box sx={{pt: 8, justifyContent: 'center', display: 'flex'}}>
                                 <Pagination count={pagesTotalCount} page={page} onChange={handlePageChange}/>
                             </Box>
                         </>
                     )
-                    : <Typography variant="h6" sx={{textAlign: 'center', pt: 2, pb: 2}}>I can't find countries with such queer name :(</Typography>
+                    : <CountriesNotFound/>
             }
-
-
 
         </SearchPageLayout>
     );
