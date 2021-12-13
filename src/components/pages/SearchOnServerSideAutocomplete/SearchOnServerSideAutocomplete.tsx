@@ -1,49 +1,55 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useRef, useState} from 'react';
 import {SearchPageLayout} from '../../layouts/SearchPageLayout';
 import Typography from '@mui/material/Typography';
 import {Box, Button, Pagination, Stack, TextField} from '@mui/material';
-import {
-    Countries,
-    CountriesNotFound,
-    Preloader,
-    SelectResponseDelay,
-    UseFetchDelay,
-    UseFilteredCountries
-} from '../../common-components';
-import {UseMyPagination} from '../../../hooks/UseMyPagination';
+import {Countries, Preloader} from '../../common-components';
+import {fakeCountryFetch} from '../../../utils';
+import {SelectResponseDelay} from '../../common-components/SelectResponseDelay/SelectResponseDelay';
 
 const COUNTRIES_PER_PAGE = 6;
+const AVAILABLE_DELAYS = [10, 20, 30, 40, 50, 75, 100, 125, 150, 200]
+const DEFAULT_FETCH_DELAY = 20
 
 export const SearchOnServerSideAutocomplete: FC = () => {
     console.log(`Рендер SearchOnServerSideAutocomplete Component`);
-
     const [searchInput, setSearchInput] = useState<string>('');
+    const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
+    const [isFetching, toggleFetching] = useState<boolean>(false)
+    const [page, setPage] = useState(1);
+    const pagesTotalCount = Math.ceil(filteredCountries.length / COUNTRIES_PER_PAGE);
 
-    const {fetchDelay, onDelayChange, delays} = UseFetchDelay(300);
+    const fetchDelay = useRef(DEFAULT_FETCH_DELAY)
 
-    const {filteredCountries, countriesFetching, setFilteredCountries} = UseFilteredCountries(searchInput, fetchDelay);
-
-    const {
-        page,
-        setPage,
-        pagesTotalCount,
-        itemsToRender,
-        handlePageChange
-    } = UseMyPagination(filteredCountries, COUNTRIES_PER_PAGE);
+    const onDelayChange = (delay: number) => {
+        fetchDelay.current = delay
+    };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchInput(event.currentTarget.value);
-        setPage(1);
+        const currentInput = event.currentTarget.value;
+
+        setSearchInput(currentInput);
+        toggleFetching(true)
+        console.log(currentInput, fetchDelay.current);
+        fakeCountryFetch(currentInput, fetchDelay.current).then((response: any[]) => {
+            setFilteredCountries(response);
+            toggleFetching(false)
+        });
     };
 
     const clearSearchInput = () => {
         setSearchInput('');
         setFilteredCountries([]);
-        setPage(1);
     };
 
-    const showSearchResults = !countriesFetching && searchInput.length > 0 && itemsToRender.length > 0;
-    const showNothingFound = !countriesFetching && searchInput.length > 0 && itemsToRender.length === 0;
+    const countriesToRender = filteredCountries.slice((page - 1) * COUNTRIES_PER_PAGE, page * COUNTRIES_PER_PAGE);
+
+
+    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
+    };
+
+    const showSearchResults = !isFetching && searchInput.length > 0 && countriesToRender.length > 0
+    const showNothingFound = !isFetching && searchInput.length > 0 && countriesToRender.length === 0
 
     return (
         <SearchPageLayout>
@@ -60,20 +66,19 @@ export const SearchOnServerSideAutocomplete: FC = () => {
                         onChange={handleInputChange}
                     />
                     <Button variant="contained" onClick={clearSearchInput}>Clear</Button>
-                    <SelectResponseDelay onSelect={onDelayChange} defaultValue={fetchDelay}
-                                         values={delays}/>
+                    <SelectResponseDelay onSelect={onDelayChange} defaultValue={DEFAULT_FETCH_DELAY} values={AVAILABLE_DELAYS} />
                 </Stack>
             </Box>
 
             {
-                countriesFetching && <Preloader/>
+                isFetching && <Preloader/>
             }
 
 
             {
                 showSearchResults && (
                     <>
-                        <Countries countries={itemsToRender}/>
+                        <Countries countries={countriesToRender}/>
 
                         <Box sx={{pt: 8, justifyContent: 'center', display: 'flex'}}>
                             <Pagination count={pagesTotalCount} page={page} onChange={handlePageChange}/>
@@ -83,7 +88,11 @@ export const SearchOnServerSideAutocomplete: FC = () => {
             }
 
             {
-                showNothingFound && <CountriesNotFound/>
+                showNothingFound && (
+                    <Typography variant="h6" sx={{textAlign: 'center', pt: 2, pb: 2}}>
+                        I can't find countries with such queer name :(
+                    </Typography>
+                )
             }
 
         </SearchPageLayout>
